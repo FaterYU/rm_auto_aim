@@ -167,7 +167,7 @@ void Tracker::initEKF(const Armor & a)
   dz = 0, another_r = r;
   target_state << xc, 0, yc, 0, za, 0, yaw, 0, r;
 
-  ekf.setState(target_state);
+  ekf.setInitState(target_state);
 }
 
 void Tracker::updateArmorsNum(const Armor & armor)

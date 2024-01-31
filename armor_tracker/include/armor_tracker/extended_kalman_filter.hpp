@@ -22,8 +22,11 @@ public:
     const VecVecFunc & f, const VecVecFunc & h, const VecMatFunc & j_f, const VecMatFunc & j_h,
     const VoidMatFunc & u_q, const VecMatFunc & u_r, const Eigen::MatrixXd & P0);
 
-  // Set the initial state
+  // Set the amend state
   void setState(const Eigen::VectorXd & x0);
+
+  // Set the initial state
+  void setInitState(const Eigen::VectorXd & x0);
 
   // Compute a predicted state
   Eigen::MatrixXd predict();

@@ -23,6 +23,16 @@ ExtendedKalmanFilter::ExtendedKalmanFilter(
 
 void ExtendedKalmanFilter::setState(const Eigen::VectorXd & x0) { x_post = x0; }
 
+void ExtendedKalmanFilter::setInitState(const Eigen::VectorXd & x0)
+{
+  x_post = x0;
+  Eigen::DiagonalMatrix<double, 9> p0;
+  p0.setIdentity();
+  P_post = p0;
+  P_pri = p0;
+  x_pri = x0;
+}
+
 Eigen::MatrixXd ExtendedKalmanFilter::predict()
 {
   F = jacobian_f(x_post), Q = update_Q();
