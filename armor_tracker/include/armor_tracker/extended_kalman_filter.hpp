@@ -20,13 +20,10 @@ public:
 
   explicit ExtendedKalmanFilter(
     const VecVecFunc & f, const VecVecFunc & h, const VecMatFunc & j_f, const VecMatFunc & j_h,
-    const VoidMatFunc & u_q, const VecMatFunc & u_r, const Eigen::MatrixXd & P0);
-
-  // Set the amend state
-  void setState(const Eigen::VectorXd & x0);
+    const VecMatFunc & u_q, const VecMatFunc & u_r, const Eigen::MatrixXd & P0);
 
   // Set the initial state
-  void setInitState(const Eigen::VectorXd & x0);
+  void setState(const Eigen::VectorXd & x0);
 
   // Compute a predicted state
   Eigen::MatrixXd predict();
@@ -46,7 +43,7 @@ private:
   VecMatFunc jacobian_h;
   Eigen::MatrixXd H;
   // Process noise covariance matrix
-  VoidMatFunc update_Q;
+  VecMatFunc update_Q;
   Eigen::MatrixXd Q;
   // Measurement noise covariance matrix
   VecMatFunc update_R;

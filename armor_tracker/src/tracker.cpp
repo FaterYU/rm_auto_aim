@@ -17,13 +17,13 @@
 
 namespace rm_auto_aim
 {
-Tracker::Tracker(double max_match_distance, double max_match_yaw_diff)
+Tracker::Tracker(double max_match_distance, double max_match_yaw_diff_)
 : tracker_state(LOST),
   tracked_id(std::string("")),
   measurement(Eigen::VectorXd::Zero(4)),
   target_state(Eigen::VectorXd::Zero(9)),
   max_match_distance_(max_match_distance),
-  max_match_yaw_diff_(max_match_yaw_diff)
+  max_match_yaw_diff_(max_match_yaw_diff_)
 {
 }
 
@@ -161,13 +161,13 @@ void Tracker::initEKF(const Armor & a)
 
   // Set initial position at 0.2m behind the target
   target_state = Eigen::VectorXd::Zero(9);
-  double r = 0.26;
+  double r = 0.15;
   double xc = xa + r * cos(yaw);
   double yc = ya + r * sin(yaw);
   dz = 0, another_r = r;
   target_state << xc, 0, yc, 0, za, 0, yaw, 0, r;
 
-  ekf.setInitState(target_state);
+  ekf.setState(target_state);
 }
 
 void Tracker::updateArmorsNum(const Armor & armor)

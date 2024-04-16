@@ -27,7 +27,7 @@ enum class ArmorsNum { NORMAL_4 = 4, BALANCE_2 = 2, OUTPOST_3 = 3 };
 class Tracker
 {
 public:
-  Tracker(double max_match_distance, double max_match_yaw_diff);
+  Tracker(double max_match_distance, double max_match_yaw_diff_);
 
   using Armors = auto_aim_interfaces::msg::Armors;
   using Armor = auto_aim_interfaces::msg::Armor;
@@ -35,6 +35,8 @@ public:
   void init(const Armors::SharedPtr & armors_msg);
 
   void update(const Armors::SharedPtr & armors_msg);
+
+  void adaptAngularVelocity(const double & duration);
 
   ExtendedKalmanFilter ekf;
 
@@ -74,6 +76,7 @@ private:
   Eigen::Vector3d getArmorPositionFromState(const Eigen::VectorXd & x);
 
   double max_match_distance_;
+
   double max_match_yaw_diff_;
 
   int detect_count_;
