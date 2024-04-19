@@ -69,6 +69,11 @@ ArmorDetectorNode::ArmorDetectorNode(const rclcpp::NodeOptions & options)
     createDebugPublishers();
   }
 
+  // Task subscriber
+  is_aim_task_ = true;
+  task_sub_ = this->create_subscription<std_msgs::msg::String>(
+    "/task_mode", 10, std::bind(&ArmorDetectorNode::taskCallback, this, std::placeholders::_1));
+
   // Debug param change moniter
   debug_param_sub_ = std::make_shared<rclcpp::ParameterEventHandler>(this);
   debug_cb_handle_ =
@@ -91,11 +96,21 @@ ArmorDetectorNode::ArmorDetectorNode(const rclcpp::NodeOptions & options)
     std::bind(&ArmorDetectorNode::imageCallback, this, std::placeholders::_1));
 }
 
+void ArmorDetectorNode::taskCallback(const std_msgs::msg::String::SharedPtr task_msg)
+{
+  std::string task_mode = task_msg->data;
+  if (task_mode == "aim") {
+    is_aim_task_ = true;
+  } else {
+    is_aim_task_ = false;
+  }
+}
+
 void ArmorDetectorNode::imageCallback(const sensor_msgs::msg::Image::ConstSharedPtr img_msg)
 {
   auto armors = detectArmors(img_msg);
 
-  if (pnp_solver_ != nullptr) {
+  if (pnp_solver_ != nullptr && is_aim_task_) {
     armors_msg_.header = armor_marker_.header = text_marker_.header = img_msg->header;
     armors_msg_.armors.clear();
     marker_array_.markers.clear();
