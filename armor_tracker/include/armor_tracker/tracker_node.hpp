@@ -1,4 +1,6 @@
-// Copyright 2022 Chen Jun
+// Copyright (C) 2022 ChenJun
+// Copyright (C) 2024 Zheng Yu
+// Licensed under the MIT License.
 
 #ifndef ARMOR_PROCESSOR__PROCESSOR_NODE_HPP_
 #define ARMOR_PROCESSOR__PROCESSOR_NODE_HPP_
@@ -53,6 +55,9 @@ private:
 
   // Reset tracker service
   rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr reset_tracker_srv_;
+
+  // Change target service
+  rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr change_target_srv_;
 
   // Subscriber with tf2 message_filter
   std::string target_frame_;

@@ -1,4 +1,7 @@
-// Copyright 2022 Chen Jun
+// Copyright (C) 2022 ChenJun
+// Copyright (C) 2024 Zheng Yu
+// Licensed under the MIT License.
+
 #include "armor_tracker/tracker_node.hpp"
 
 // STD
@@ -135,6 +138,17 @@ ArmorTrackerNode::ArmorTrackerNode(const rclcpp::NodeOptions & options)
       return;
     });
 
+  // Change target service
+  change_target_srv_ = this->create_service<std_srvs::srv::Trigger>(
+    "/tracker/change", [this](
+                         const std_srvs::srv::Trigger::Request::SharedPtr,
+                         std_srvs::srv::Trigger::Response::SharedPtr response) {
+      tracker_->tracker_state = Tracker::CHANGE_TARGET;
+      response->success = true;
+      RCLCPP_INFO(this->get_logger(), "Target change!");
+      return;
+    });
+
   // Subscriber with tf2 message_filter
   // tf2 relevant
   tf2_buffer_ = std::make_shared<tf2_ros::Buffer>(this->get_clock());
@@ -263,6 +277,8 @@ void ArmorTrackerNode::armorsCallback(const auto_aim_interfaces::msg::Armors::Sh
       target_msg.radius_1 = state(8);
       target_msg.radius_2 = tracker_->another_r;
       target_msg.dz = tracker_->dz;
+    } else if (tracker_->tracker_state == Tracker::CHANGE_TARGET) {
+      target_msg.tracking = false;
     }
   }
 

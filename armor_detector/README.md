@@ -18,6 +18,7 @@
 订阅：
 - 相机参数 `/camera_info`
 - 彩色图像 `/image_raw`
+- 任务模式 `/task_mode`
 
 发布：
 - 识别目标 `/detector/armors`
@@ -26,6 +27,7 @@
 - 筛选灯条的参数 `light`
   - 长宽比范围 `min/max_ratio` 
   - 最大倾斜角度 `max_angle`
+  - 最小占比(灯条/旋转矩形) `min_fill_ratio`
 - 筛选灯条配对结果的参数 `armor`
   - 两灯条的最小长度之比（短边/长边）`min_light_ratio `
   - 装甲板两灯条中心的距离范围（大装甲板）`min/max_large_center_distance`
@@ -54,7 +56,17 @@
 ### findLights
 寻找灯条
 
-通过 findContours 得到轮廓，再通过 minAreaRect 获得最小外接矩形，对其进行长宽比和倾斜角度的判断，可以高效的筛除形状不满足的亮斑。
+通过 findContours 得到轮廓，**再通过 fitLine 最小二乘法获得灯条角点**，再结合 minAreaRect 的最小旋转外接矩形，对其进行长宽比、倾斜角度和**灯条占比**的判断，可以高效的筛除形状不满足的亮斑，并减少将大块白光识别为灯条所占用资源。
+
+以下图片解释了为何需要使用最小二乘法，由下方左图显而易见：在像素点不足以让外接矩形旋转时会带来灯条角点的误差（外接矩形上下中点连线）从而将噪声引入PnP后的R。优化方案目前尝试的最小二乘法及超分辨率较为合适，效果如下。在考虑计算开销的角度考虑，最小二乘方案耗时大约是超分辨率方案（双线性插值）耗时的10%，故选择前者，所带来的额外计算开销小于1ms。此外最小二乘方案还能减小个别像素点抖动带来的角点抖动。
+
+- 绿色轮廓：findContours
+- 红色矩形：minAreaRect
+- 蓝色线段：fitLine
+
+| ![](docs/light_minAreaRect.png) | ![](docs/light_super-resolution.png) |
+| :-----------------------------: | :----------------------------------: |
+|          最小二乘方案           |             超分辨率方案             |
 
 判断灯条颜色这里采用了对轮廓内的的R/B值求和，判断两和的的大小的方法，若 `sum_r > sum_b` 则认为是红色灯条，反之则认为是蓝色灯条。
 
@@ -102,3 +114,5 @@ PnP解算器
 PnP解算器将 `cv::solvePnP()` 封装，接口中传入 `Armor` 类型的数据即可得到 `geometry_msgs::msg::Point` 类型的三维坐标。
 
 考虑到装甲板的四个点在一个平面上，在PnP解算方法上我们选择了 `cv::SOLVEPNP_IPPE` (Method is based on the paper of T. Collins and A. Bartoli. ["Infinitesimal Plane-Based Pose Estimation"](https://link.springer.com/article/10.1007/s11263-014-0725-5). This method requires coplanar object points.)
+
+**PnP解算的参数需要根据识别器的曝光及二值化阈值的不同而调整，具体表现为：将曝光及二值化阈值调整至灯条像素点波动最小后，使用激光测距测量真实距离将PnP中的装甲板长宽参数进行调整直到观测值与真实值贴近，最后可改变目标装甲板距离及角度验证。**

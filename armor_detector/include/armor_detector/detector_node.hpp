@@ -1,10 +1,12 @@
-// Copyright 2022 Chen Jun
+// Copyright (C) 2022 ChenJun
+// Copyright (C) 2024 Zheng Yu
 // Licensed under the MIT License.
 
 #ifndef ARMOR_DETECTOR__DETECTOR_NODE_HPP_
 #define ARMOR_DETECTOR__DETECTOR_NODE_HPP_
 
 // ROS
+#include <geometry_msgs/msg/point.hpp>
 #include <image_transport/image_transport.hpp>
 #include <image_transport/publisher.hpp>
 #include <image_transport/subscriber_filter.hpp>

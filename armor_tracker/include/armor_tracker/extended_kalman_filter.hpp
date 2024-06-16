@@ -1,4 +1,6 @@
-// Copyright 2022 Chen Jun
+// Copyright (C) 2022 ChenJun
+// Copyright (C) 2024 Zheng Yu
+// Licensed under the MIT License.
 
 #ifndef ARMOR_PROCESSOR__KALMAN_FILTER_HPP_
 #define ARMOR_PROCESSOR__KALMAN_FILTER_HPP_

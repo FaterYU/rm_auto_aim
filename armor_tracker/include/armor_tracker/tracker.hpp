@@ -1,4 +1,6 @@
-// Copyright 2022 Chen Jun
+// Copyright (C) 2022 ChenJun
+// Copyright (C) 2024 Zheng Yu
+// Licensed under the MIT License.
 
 #ifndef ARMOR_PROCESSOR__TRACKER_HPP_
 #define ARMOR_PROCESSOR__TRACKER_HPP_
@@ -42,15 +44,18 @@ public:
 
   int tracking_thres;
   int lost_thres;
+  int change_thres;
 
   enum State {
     LOST,
     DETECTING,
     TRACKING,
     TEMP_LOST,
+    CHANGE_TARGET,
   } tracker_state;
 
   std::string tracked_id;
+  std::string last_tracked_id;
   Armor tracked_armor;
   ArmorsNum tracked_armors_num;
 
@@ -67,6 +72,8 @@ public:
 private:
   void initEKF(const Armor & a);
 
+  void initChange(const Armor & armor_msg);
+
   void updateArmorsNum(const Armor & a);
 
   void handleArmorJump(const Armor & a);
@@ -81,6 +88,7 @@ private:
 
   int detect_count_;
   int lost_count_;
+  int change_count_;
 
   double last_yaw_;
 };

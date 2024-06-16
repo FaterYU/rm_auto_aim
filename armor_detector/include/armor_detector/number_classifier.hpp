@@ -1,4 +1,6 @@
-// Copyright 2022 Chen Jun
+// Copyright (C) 2022 ChenJun
+// Copyright (C) 2024 Zheng Yu
+// Licensed under the MIT License.
 
 #ifndef ARMOR_DETECTOR__NUMBER_CLASSIFIER_HPP_
 #define ARMOR_DETECTOR__NUMBER_CLASSIFIER_HPP_

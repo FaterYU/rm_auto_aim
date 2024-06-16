@@ -1,4 +1,5 @@
-// Copyright 2022 Chen Jun
+// Copyright (C) 2022 ChenJun
+// Copyright (C) 2024 Zheng Yu
 // Licensed under the MIT License.
 
 #ifndef ARMOR_DETECTOR__DETECTOR_HPP_
@@ -30,6 +31,8 @@ public:
     double max_ratio;
     // vertical angle
     double max_angle;
+    // area condition
+    double min_fill_ratio;
   };
 
   struct ArmorParams

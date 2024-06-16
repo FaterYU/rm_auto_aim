@@ -1,4 +1,5 @@
-// Copyright 2022 Chen Jun
+// Copyright (C) 2022 ChenJun
+// Copyright (C) 2024 Zheng Yu
 // Licensed under the MIT License.
 
 #include <cv_bridge/cv_bridge.h>
@@ -147,6 +148,17 @@ void ArmorDetectorNode::imageCallback(const sensor_msgs::msg::Image::ConstShared
         // Fill the distance to image center
         armor_msg.distance_to_image_center = pnp_solver_->calculateDistanceToCenter(armor.center);
 
+        // Fill keypoints
+        armor_msg.kpts.clear();
+        for (const auto & pt :
+             {armor.left_light.top, armor.left_light.bottom, armor.right_light.bottom,
+              armor.right_light.top}) {
+          geometry_msgs::msg::Point point;
+          point.x = pt.x;
+          point.y = pt.y;
+          armor_msg.kpts.emplace_back(point);
+        }
+
         // Fill the markers
         armor_marker_.id++;
         armor_marker_.scale.y = armor.type == ArmorType::SMALL ? 0.135 : 0.23;
@@ -188,7 +200,9 @@ std::unique_ptr<Detector> ArmorDetectorNode::initDetector()
   Detector::LightParams l_params = {
     .min_ratio = declare_parameter("light.min_ratio", 0.1),
     .max_ratio = declare_parameter("light.max_ratio", 0.4),
-    .max_angle = declare_parameter("light.max_angle", 40.0)};
+    .max_angle = declare_parameter("light.max_angle", 35.0),
+    .min_fill_ratio = declare_parameter("light.min_fill_ratio", 0.8),
+  };
 
   Detector::ArmorParams a_params = {
     .min_light_ratio = declare_parameter("armor.min_light_ratio", 0.7),

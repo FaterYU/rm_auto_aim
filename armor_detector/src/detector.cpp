@@ -1,4 +1,5 @@
-// Copyright (c) 2022 ChenJun
+// Copyright (C) 2022 ChenJun
+// Copyright (C) 2024 Zheng Yu
 // Licensed under the MIT License.
 
 // OpenCV
@@ -50,7 +51,7 @@ cv::Mat Detector::preprocessImage(const cv::Mat & rgb_img)
   return binary_img;
 }
 
-std::vector<Light> Detector::findLights(const cv::Mat & rbg_img, const cv::Mat & binary_img)
+std::vector<Light> Detector::findLights(const cv::Mat & rgb_img, const cv::Mat & binary_img)
 {
   using std::vector;
   vector<vector<cv::Point>> contours;
@@ -63,16 +64,46 @@ std::vector<Light> Detector::findLights(const cv::Mat & rbg_img, const cv::Mat &
   for (const auto & contour : contours) {
     if (contour.size() < 5) continue;
 
+    auto b_rect = cv::boundingRect(contour);
     auto r_rect = cv::minAreaRect(contour);
-    auto light = Light(r_rect);
+    cv::Mat mask = cv::Mat::zeros(b_rect.size(), CV_8UC1);
+    std::vector<cv::Point> mask_contour;
+    for (const auto & p : contour) {
+      mask_contour.emplace_back(p - cv::Point(b_rect.x, b_rect.y));
+    }
+    cv::fillPoly(mask, {mask_contour}, 255);
+    std::vector<cv::Point> points;
+    cv::findNonZero(mask, points);
+    // points / rotated rect area
+    bool is_fill_rotated_rect =
+      points.size() / (r_rect.size.width * r_rect.size.height) > l.min_fill_ratio;
+    cv::Vec4f return_param;
+    cv::fitLine(points, return_param, cv::DIST_L2, 0, 0.01, 0.01);
+    cv::Point2f top, bottom;
+    double angle_k;
+    if (int(return_param[0] * 100) == 100 || int(return_param[1] * 100) == 0) {
+      top = cv::Point2f(b_rect.x + b_rect.width / 2, b_rect.y);
+      bottom = cv::Point2f(b_rect.x + b_rect.width / 2, b_rect.y + b_rect.height);
+      angle_k = 0;
+    } else {
+      auto k = return_param[1] / return_param[0];
+      auto b = (return_param[3] + b_rect.y) - k * (return_param[2] + b_rect.x);
+      top = cv::Point2f((b_rect.y - b) / k, b_rect.y);
+      bottom = cv::Point2f((b_rect.y + b_rect.height - b) / k, b_rect.y + b_rect.height);
+      angle_k = std::atan(k) / CV_PI * 180 - 90;
+      if (angle_k > 90) {
+        angle_k = 180 - angle_k;
+      }
+    }
+    auto light = Light(b_rect, top, bottom, points.size(), angle_k);
 
-    if (isLight(light)) {
-      auto rect = light.boundingRect();
+    if (isLight(light) && is_fill_rotated_rect) {
+      auto rect = light;
       if (  // Avoid assertion failed
-        0 <= rect.x && 0 <= rect.width && rect.x + rect.width <= rbg_img.cols && 0 <= rect.y &&
-        0 <= rect.height && rect.y + rect.height <= rbg_img.rows) {
+        0 <= rect.x && 0 <= rect.width && rect.x + rect.width <= rgb_img.cols && 0 <= rect.y &&
+        0 <= rect.height && rect.y + rect.height <= rgb_img.rows) {
         int sum_r = 0, sum_b = 0;
-        auto roi = rbg_img(rect);
+        auto roi = rgb_img(rect);
         // Iterate through the ROI
         for (int i = 0; i < roi.rows; i++) {
           for (int j = 0; j < roi.cols; j++) {

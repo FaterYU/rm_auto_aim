@@ -1,4 +1,5 @@
 // Copyright 2022 Chen Jun
+// Copyright 2024 Zheng Yu
 // Licensed under the MIT License.
 
 #ifndef ARMOR_DETECTOR__ARMOR_HPP_
@@ -18,26 +19,20 @@ const int BLUE = 1;
 enum class ArmorType { SMALL, LARGE, INVALID };
 const std::string ARMOR_TYPE_STR[3] = {"small", "large", "invalid"};
 
-struct Light : public cv::RotatedRect
+struct Light : public cv::Rect
 {
   Light() = default;
-  explicit Light(cv::RotatedRect box) : cv::RotatedRect(box)
+  explicit Light(cv::Rect box, cv::Point2f top, cv::Point2f bottom, int area, float tilt_angle)
+  : cv::Rect(box), top(top), bottom(bottom), tilt_angle(tilt_angle)
   {
-    cv::Point2f p[4];
-    box.points(p);
-    std::sort(p, p + 4, [](const cv::Point2f & a, const cv::Point2f & b) { return a.y < b.y; });
-    top = (p[0] + p[1]) / 2;
-    bottom = (p[2] + p[3]) / 2;
-
     length = cv::norm(top - bottom);
-    width = cv::norm(p[0] - p[1]);
-
-    tilt_angle = std::atan2(std::abs(top.x - bottom.x), std::abs(top.y - bottom.y));
-    tilt_angle = tilt_angle / CV_PI * 180;
+    width = area / length;
+    center = (top + bottom) / 2;
   }
 
   int color;
   cv::Point2f top, bottom;
+  cv::Point2f center;
   double length;
   double width;
   float tilt_angle;

@@ -1,4 +1,6 @@
-// Copyright 2022 Chen Jun
+// Copyright (C) 2022 ChenJun
+// Copyright (C) 2024 Zheng Yu
+// Licensed under the MIT License.
 
 #include "armor_detector/pnp_solver.hpp"
 

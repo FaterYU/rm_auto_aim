@@ -1,4 +1,6 @@
-// Copyright 2022 Chen Jun
+// Copyright (C) 2022 ChenJun
+// Copyright (C) 2024 Zheng Yu
+// Licensed under the MIT License.
 
 #include "armor_tracker/tracker.hpp"
 
@@ -49,7 +51,24 @@ void Tracker::init(const Armors::SharedPtr & armors_msg)
   tracked_id = tracked_armor.number;
   tracker_state = DETECTING;
 
+  change_count_ = 0;
+  change_thres = 20;
+
   updateArmorsNum(tracked_armor);
+}
+
+void Tracker::initChange(const Armor & armor_msg)
+{
+  initEKF(armor_msg);
+  RCLCPP_DEBUG(rclcpp::get_logger("armor_tracker"), "Init EKF!");
+
+  tracked_id = armor_msg.number;
+  tracker_state = DETECTING;
+
+  change_count_ = 0;
+  change_thres = 20;
+
+  updateArmorsNum(armor_msg);
 }
 
 void Tracker::update(const Armors::SharedPtr & armors_msg)
@@ -68,7 +87,10 @@ void Tracker::update(const Armors::SharedPtr & armors_msg)
     int same_id_armors_count = 0;
     auto predicted_position = getArmorPositionFromState(ekf_prediction);
     double min_position_diff = DBL_MAX;
+    double diff_min_position_diff = DBL_MAX;
     double yaw_diff = DBL_MAX;
+    int diff_count = 0;
+    Armor diff_tracked_armor;
     for (const auto & armor : armors_msg->armors) {
       // Only consider armors with the same id
       if (armor.number == tracked_id) {
@@ -84,7 +106,23 @@ void Tracker::update(const Armors::SharedPtr & armors_msg)
           yaw_diff = abs(orientationToYaw(armor.pose.orientation) - ekf_prediction(6));
           tracked_armor = armor;
         }
+      } else if (tracker_state == CHANGE_TARGET) {
+        // Count diff_armor
+        diff_count += 1;
+        // Calculate the difference between the predicted position and the current armor position
+        auto p = armor.pose.position;
+        Eigen::Vector3d position_vec(p.x, p.y, p.z);
+        double position_diff = (predicted_position - position_vec).norm();
+        if (position_diff < diff_min_position_diff) {
+          // Find the closest armor
+          diff_min_position_diff = position_diff;
+          diff_tracked_armor = armor;
+        }
       }
+    }
+    if (diff_count != 0) {
+      initChange(diff_tracked_armor);
+      return;
     }
 
     // Store tracker info
@@ -148,6 +186,13 @@ void Tracker::update(const Armors::SharedPtr & armors_msg)
       tracker_state = TRACKING;
       lost_count_ = 0;
     }
+  } else if (tracker_state == CHANGE_TARGET) {
+    if (change_count_ > change_thres) {
+      tracker_state = TRACKING;
+      change_count_ = 0;
+    } else {
+      change_count_++;
+    }
   }
 }
 
@@ -161,7 +206,7 @@ void Tracker::initEKF(const Armor & a)
 
   // Set initial position at 0.2m behind the target
   target_state = Eigen::VectorXd::Zero(9);
-  double r = 0.15;
+  double r = 0.2;
   double xc = xa + r * cos(yaw);
   double yc = ya + r * sin(yaw);
   dz = 0, another_r = r;

@@ -2,10 +2,13 @@
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
   <name>auto_aim_interfaces</name>
-  <version>0.0.0</version>
-  <description>TODO: Package description</description>
-  <maintainer email="chen.junn@outlook.com">chenjun</maintainer>
-  <license>TODO: License declaration</license>
+  <version>2.0.0</version>
+  <description>RoboMaster auto aim user interfaces.</description>
+  <maintainer email="defateyz@gmail.com">Zheng Yu</maintainer>
+  <license>MIT</license>
+  <url type="website">https://github.com/FaterYU/rm_auto_aim</url>
+  <url type="bugtracker">https://github.com/FaterYU/rm_auto_aim/issues</url>
+  <author email="defateyz@gmail.com">Zheng Yu</author>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 

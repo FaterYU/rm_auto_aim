@@ -2,13 +2,13 @@
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
   <name>armor_tracker</name>
-  <version>0.1.0</version>
-  <description>A template for ROS packages.</description>
-  <maintainer email="chen.junn@outlook.com">Chen Jun</maintainer>
-  <license>BSD</license>
-  <url type="website">https://github.com/chenjunnn/rm_auto_aim</url>
-  <url type="bugtracker">https://github.com/chenjunnn/rm_auto_aim/issues</url>
-  <author email="chen.junn@outlook.com">Chen Jun</author>
+  <version>2.0.0</version>
+  <description>RoboMaster armor tracker.</description>
+  <maintainer email="defateyz@gmail.com">Zheng Yu</maintainer>
+  <license>MIT</license>
+  <url type="website">https://github.com/FaterYU/rm_auto_aim</url>
+  <url type="bugtracker">https://github.com/FaterYU/rm_auto_aim/issues</url>
+  <author email="defateyz@gmail.com">Zheng Yu</author>
 
   <!-- buildtool_depend: dependencies of the build process -->
   <buildtool_depend>ament_cmake</buildtool_depend>
